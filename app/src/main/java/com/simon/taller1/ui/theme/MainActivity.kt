@@ -8,7 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -42,6 +45,8 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.simon.taller1.api.KtorApiClient
 import com.simon.taller1.modelo.User
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -152,22 +157,51 @@ fun NavigationStack() {
 
 @Composable
 fun MainScreen(navController: NavController) {
-    val user = remember {
 
-    }
     UserListScreen () { user ->
         //Cambiar a pantalla de detalles de usuario
-        Toast.makeText(
-            this,
-            "Usuario ${user.firstName} seleccionado",
-            Toast.LENGTH_SHORT).show()
+        //Hacer navegacion mandar usuario
+        val userJson = Json.encodeToString(user)
+        navController.navigate(Screen.Detail.route)
+    }
+}
+
+
+@Composable
+fun DetailScreen(user: User) {
+    Card (
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column (
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            AsyncImage(
+                model = user.image,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+            Text (
+                text = "${user.firstName} ${user.lastName}",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+            textoUsuario(user);
+        }
     }
 }
 
 @Composable
-fun DetailScreen(user: User) {
-    Card () {
-        Column {  }
+fun textoUsuario(user: User) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Empresa: ${user.company.name}", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Teléfono: ${user.phone}", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Email: ${user.email}", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Edad: ${user.age}", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Género: ${user.gender}", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Altura: ${user.height} m", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Peso: ${user.weight} kg", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Universidad: ${user.university}", style = MaterialTheme.typography.bodyMedium)
     }
 }
-
