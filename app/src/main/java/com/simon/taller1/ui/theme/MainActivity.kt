@@ -17,8 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -36,11 +36,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
 import com.simon.taller1.api.KtorApiClient
 import com.simon.taller1.modelo.User
-import okhttp3.internal.http2.Header
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -142,4 +143,31 @@ fun UserListItem(user: User, onClick: () -> Unit) {
     }
 }
 
+// Navegacion Taller 1
+@Composable
+fun NavigationStack() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = )
+}
+
+@Composable
+fun MainScreen(navController: NavController) {
+    val user = remember {
+
+    }
+    UserListScreen () { user ->
+        //Cambiar a pantalla de detalles de usuario
+        Toast.makeText(
+            this,
+            "Usuario ${user.firstName} seleccionado",
+            Toast.LENGTH_SHORT).show()
+    }
+}
+
+@Composable
+fun DetailScreen(user: User) {
+    Card () {
+        Column {  }
+    }
+}
 

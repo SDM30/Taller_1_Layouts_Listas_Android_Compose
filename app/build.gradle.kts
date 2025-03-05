@@ -41,6 +41,7 @@ android {
 }
 
 val ktorVersion = "3.0.3"
+val nav_version = "2.8.8"
 
 dependencies {
 
@@ -63,6 +64,8 @@ dependencies {
     // Coil
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+    //Navegacion
+    implementation("androidx.navigation:navigation-compose:$nav_version")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

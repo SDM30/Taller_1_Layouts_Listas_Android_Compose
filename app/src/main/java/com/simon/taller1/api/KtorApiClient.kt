@@ -32,6 +32,6 @@ class KtorApiClient {
     }
 
     suspend fun getUsers(): UsersList {
-        return client.get("users").body()
+        return client.get("user").body()
     }
 }
