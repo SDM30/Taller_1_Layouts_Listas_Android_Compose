@@ -209,19 +209,10 @@ fun DetailScreen(userId: Int?) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.Top
+                verticalArrangement = Arrangement.Center
             ) {
-                AsyncImage(
-                    model = user.image,
-                    contentDescription = null,
-                    modifier = Modifier.size(100.dp)
-                )
-                Text(
-                    text = "${user.firstName} ${user.lastName}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                )
+                PfP(user)
+                NameUser(user)
                 UserText(user)
             }
         }
@@ -243,30 +234,30 @@ fun UserText(user: User) {
 }
 
 @Composable
-fun PfPName(user: User){
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(50.dp),
-        verticalArrangement = Arrangement.Top
+fun PfP(user: User){
+    Row (
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            AsyncImage(
-                model = user.image,
-                contentDescription = null,
-                modifier = Modifier.size(100.dp)
-            )
-            Text(
-                text = "${user.firstName} ${user.lastName}",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-            )
-        }
+        AsyncImage(
+            model = user.image,
+            contentDescription = null,
+            modifier = Modifier.size(200.dp)
+        )
+    }
+}
+
+@Composable
+fun NameUser(user: User) {
+    Row (
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "${user.firstName} ${user.lastName}",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
