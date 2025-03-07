@@ -2,7 +2,7 @@ package com.simon.taller1.ui.theme
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,6 +10,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,16 +38,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil3.compose.AsyncImage
 import com.simon.taller1.api.KtorApiClient
 import com.simon.taller1.modelo.User
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -55,13 +57,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MaterialTheme {
-                UserListScreen () { user ->
-                    //Cambiar a pantalla de detalles de usuario
-                    Toast.makeText(
-                        this,
-                        "Usuario ${user.firstName} seleccionado",
-                        Toast.LENGTH_SHORT).show()
-                }
+                NavigationStack()
             }
         }
     }
@@ -152,48 +148,88 @@ fun UserListItem(user: User, onClick: () -> Unit) {
 @Composable
 fun NavigationStack() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = )
+    NavHost(navController = navController, startDestination = Screen.Main.route) {
+        composable(route = Screen.Main.route) {
+            MainScreen(navController = navController)
+        }
+
+        composable(
+            route = Screen.Detail.route + "?userId={userId}",
+            arguments = listOf(
+                navArgument("userId"){
+                    type = NavType.IntType
+                    nullable = false
+                }
+            )
+        ) {backStackEntry ->
+            val userId = backStackEntry.arguments?.getInt("userId")
+            DetailScreen(userId)
+        }
+    }
+}
+
+sealed class Screen(val route: String) {
+    object Main: Screen("main_screen")
+    object Detail: Screen("detail_screen")
+
 }
 
 @Composable
 fun MainScreen(navController: NavController) {
-
-    UserListScreen () { user ->
-        //Cambiar a pantalla de detalles de usuario
-        //Hacer navegacion mandar usuario
-        val userJson = Json.encodeToString(user)
-        navController.navigate(Screen.Detail.route)
+    UserListScreen { user ->
+        // Navegar directamente sin usar un estado intermedio
+        navController.navigate(route = "${Screen.Detail.route}?userId=${user.id}")
     }
 }
 
 
+
 @Composable
-fun DetailScreen(user: User) {
-    Card (
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column (
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.Center,
+fun DetailScreen(userId: Int?) {
+    //Cambiar esto para no repetir el codigo
+    val ktorApiClient = KtorApiClient()
+    var users by remember { mutableStateOf(emptyList<User>()) }
+    var userFound by remember { mutableStateOf<User?>(null) }
+
+    LaunchedEffect(userId) {
+        users = ktorApiClient.getUsers().users
+        userFound = users.find { it.id == userId }
+        if (userFound != null) {
+            Log.i("MIRAME", "${userFound!!.firstName}")
+        } else {
+            Log.i("MIRAME", "No lo encontré, ID: $userId")
+        }
+    }
+
+    userFound?.let { user ->
+        Card(
+            modifier = Modifier.fillMaxSize()
         ) {
-            AsyncImage(
-                model = user.image,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize()
-            )
-            Text (
-                text = "${user.firstName} ${user.lastName}",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
-            textoUsuario(user);
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Top
+            ) {
+                AsyncImage(
+                    model = user.image,
+                    contentDescription = null,
+                    modifier = Modifier.size(100.dp)
+                )
+                Text(
+                    text = "${user.firstName} ${user.lastName}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                )
+                UserText(user)
+            }
         }
     }
 }
 
 @Composable
-fun textoUsuario(user: User) {
+fun UserText(user: User) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Empresa: ${user.company.name}", style = MaterialTheme.typography.bodyMedium)
         Text(text = "Teléfono: ${user.phone}", style = MaterialTheme.typography.bodyMedium)
@@ -203,5 +239,34 @@ fun textoUsuario(user: User) {
         Text(text = "Altura: ${user.height} m", style = MaterialTheme.typography.bodyMedium)
         Text(text = "Peso: ${user.weight} kg", style = MaterialTheme.typography.bodyMedium)
         Text(text = "Universidad: ${user.university}", style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+fun PfPName(user: User){
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(50.dp),
+        verticalArrangement = Arrangement.Top
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            AsyncImage(
+                model = user.image,
+                contentDescription = null,
+                modifier = Modifier.size(100.dp)
+            )
+            Text(
+                text = "${user.firstName} ${user.lastName}",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
