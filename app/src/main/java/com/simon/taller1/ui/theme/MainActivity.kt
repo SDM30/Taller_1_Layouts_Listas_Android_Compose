@@ -202,8 +202,6 @@ fun DetailScreen(navController: NavController) {
                 UserText(it)
             }
         }
-    } ?: run {
-        Text("Usuario no encontrado", modifier = Modifier.padding(16.dp))
     }
 }
 
