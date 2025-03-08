@@ -1,5 +1,10 @@
 package com.simon.taller1.ui.theme
 
+/****
+ * Realizado por Simón y Jorge
+ * Basado en ejemplos dados por el Profesor Mauricio Cuibiedes
+ */
+
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
@@ -59,7 +64,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            SimonJorgeTheme {
                 NavigationStack()
             }
         }
@@ -71,17 +76,21 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun UserListScreen(users: List<User>, onUserClick: (User) -> Unit) {
-    LazyColumn {
-        stickyHeader {
-            Surface(
-                color = MaterialTheme.colorScheme.primary
-            ) {
-                Header(users = users)
+    Surface (
+        color = MaterialTheme.colorScheme.background
+    ) {
+        LazyColumn {
+            stickyHeader {
+                Surface(
+                    color = MaterialTheme.colorScheme.primary
+                ) {
+                    Header(users = users)
+                }
             }
-        }
 
-        items(users) { user ->
-            UserListItem(user = user, onClick = { onUserClick(user) })
+            items(users) { user ->
+                UserListItem(user = user, onClick = { onUserClick(user) })
+            }
         }
     }
 
