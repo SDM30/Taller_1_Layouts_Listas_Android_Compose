@@ -1,6 +1,8 @@
 package com.simon.taller1.ui.theme
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -37,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -208,9 +211,16 @@ fun DetailScreen(navController: NavController) {
 
 @Composable
 fun UserText(user: User) {
+    val context = LocalContext.current
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = "Empresa: ${user.company.name}", style = MaterialTheme.typography.bodyMedium)
-        Text(text = "Teléfono: ${user.phone}", style = MaterialTheme.typography.bodyMedium)
+        Text(
+            text = "Teléfono: ${user.phone}",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.clickable {
+                dialPhoneNumber(context, user.phone)
+            }
+        )
         Text(text = "Email: ${user.email}", style = MaterialTheme.typography.bodyMedium)
         Text(text = "Edad: ${user.age}", style = MaterialTheme.typography.bodyMedium)
         Text(text = "Género: ${user.gender}", style = MaterialTheme.typography.bodyMedium)
@@ -247,4 +257,12 @@ fun NameUser(user: User) {
             fontWeight = FontWeight.Bold,
         )
     }
+}
+
+//Llamar cliente
+fun dialPhoneNumber(context: android.content.Context, phoneNumber: String) {
+    val intent = Intent(Intent.ACTION_DIAL).apply {
+        data = Uri.parse("tel:$phoneNumber")
+    }
+    context.startActivity(intent)
 }
