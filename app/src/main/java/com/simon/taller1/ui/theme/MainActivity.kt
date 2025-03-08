@@ -67,14 +67,7 @@ class MainActivity : ComponentActivity() {
 //Lista de usuarios con LazyColumn y StickyHeader
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun UserListScreen(onUserClick: (User) -> Unit) {
-    val ktorApiClient = KtorApiClient()
-    var users by remember { mutableStateOf(listOf<User>()) }
-
-    LaunchedEffect(Unit) {
-        users = ktorApiClient.getUsers().users;
-    }
-
+fun UserListScreen(users: List<User>, onUserClick: (User) -> Unit) {
     LazyColumn {
         stickyHeader {
             Surface(
@@ -88,6 +81,7 @@ fun UserListScreen(onUserClick: (User) -> Unit) {
             UserListItem(user = user, onClick = { onUserClick(user) })
         }
     }
+
 }
 
 // Composable para crear el header de la lista
@@ -150,20 +144,13 @@ fun NavigationStack() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.Main.route) {
         composable(route = Screen.Main.route) {
+            // Guarda el estado en el backstack
             MainScreen(navController = navController)
         }
 
-        composable(
-            route = Screen.Detail.route + "?userId={userId}",
-            arguments = listOf(
-                navArgument("userId"){
-                    type = NavType.IntType
-                    nullable = false
-                }
-            )
-        ) {backStackEntry ->
-            val userId = backStackEntry.arguments?.getInt("userId")
-            DetailScreen(userId)
+        composable(route = Screen.Detail.route) {
+            //Carga el estado guardado en el backstack
+            DetailScreen(navController)
         }
     }
 }
@@ -176,32 +163,31 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun MainScreen(navController: NavController) {
-    UserListScreen { user ->
-        // Navegar directamente sin usar un estado intermedio
-        navController.navigate(route = "${Screen.Detail.route}?userId=${user.id}")
+    val ktorApiClient = KtorApiClient()
+    var users by remember { mutableStateOf(listOf<User>()) }
+
+    LaunchedEffect(Unit) {
+        users = ktorApiClient.getUsers().users
+    }
+
+    UserListScreen(users) { user ->
+        navController.currentBackStackEntry?.savedStateHandle?.set("user", user)
+        navController.navigate(Screen.Detail.route)
     }
 }
 
 
 
 @Composable
-fun DetailScreen(userId: Int?) {
-    //Cambiar esto para no repetir el codigo
-    val ktorApiClient = KtorApiClient()
-    var users by remember { mutableStateOf(emptyList<User>()) }
-    var userFound by remember { mutableStateOf<User?>(null) }
+fun DetailScreen(navController: NavController) {
+    //Obtiene la pantalla anterior en la pila de navegacion
+    val user = navController.previousBackStackEntry
+        ?.savedStateHandle // accede al usuario guardado
+        ?.get<User>("user")
 
-    LaunchedEffect(userId) {
-        users = ktorApiClient.getUsers().users
-        userFound = users.find { it.id == userId }
-        if (userFound != null) {
-            Log.i("MIRAME", "${userFound!!.firstName}")
-        } else {
-            Log.i("MIRAME", "No lo encontré, ID: $userId")
-        }
-    }
-
-    userFound?.let { user ->
+    // Revisa si es nulo y imprime la info en una funcion de alcance
+    // la funcion permite acceder sin usar el nombre user
+    user?.let {
         Card(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -211,13 +197,16 @@ fun DetailScreen(userId: Int?) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.Center
             ) {
-                PfP(user)
-                NameUser(user)
-                UserText(user)
+                PfP(it)
+                NameUser(it)
+                UserText(it)
             }
         }
+    } ?: run {
+        Text("Usuario no encontrado", modifier = Modifier.padding(16.dp))
     }
 }
+
 
 @Composable
 fun UserText(user: User) {
