@@ -145,10 +145,18 @@ fun UserListItem(user: User, onClick: () -> Unit) {
 @Composable
 fun NavigationStack() {
     val navController = rememberNavController()
+
+    val ktorApiClient = KtorApiClient()
+    var users by remember { mutableStateOf(listOf<User>()) }
+
+    LaunchedEffect(Unit) {
+        users = ktorApiClient.getUsers().users
+    }
+
     NavHost(navController = navController, startDestination = Screen.Main.route) {
         composable(route = Screen.Main.route) {
             // Guarda el estado en el backstack
-            MainScreen(navController = navController)
+            MainScreen(navController = navController, users)
         }
 
         composable(route = Screen.Detail.route) {
@@ -165,14 +173,7 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun MainScreen(navController: NavController) {
-    val ktorApiClient = KtorApiClient()
-    var users by remember { mutableStateOf(listOf<User>()) }
-
-    LaunchedEffect(Unit) {
-        users = ktorApiClient.getUsers().users
-    }
-
+fun MainScreen(navController: NavController, users: List<User>) {
     UserListScreen(users) { user ->
         navController.currentBackStackEntry?.savedStateHandle?.set("user", user)
         navController.navigate(Screen.Detail.route)
